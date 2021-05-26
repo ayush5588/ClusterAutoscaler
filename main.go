@@ -1,3 +1,4 @@
+// Code to get the pods in the cluster
 package main
 
 import (
@@ -21,6 +22,7 @@ func main() {
          }
 
          pods, err := clientset.CoreV1().Pods("").List(context.TODO(),metav1.ListOptions{})
+	 // nodes, err := clientset.CoreV1().Nodes().List(context.TODO(),metav1.ListOptions{})
          if err != nil {
          	panic(err.Error())
      	 }
