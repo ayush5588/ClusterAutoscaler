@@ -4,7 +4,7 @@ package main
 import(
     "fmt"
     "log"
-    list "github.com/ayush5588/ClusterAutoscaler/podNodeList"
+    list "github.com/ayush5588/ClusterAutoscaler/pkg"
     )
 
 
