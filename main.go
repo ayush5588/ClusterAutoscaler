@@ -1,34 +1,23 @@
 // Code to get the pods in the cluster
 package main
 
-import (
-	 "context"
-         "k8s.io/client-go/tools/clientcmd"
-         "k8s.io/client-go/kubernetes"
-         "log"
-         "fmt"
-         metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import(
+    "fmt"
+    "log"
+    list "github.com/ayush5588/ClusterAutoscaler/podNodeList"
     )
 
-func main() {
-         kubeconfig :=  "/home/ayush5588/go/src/kubernetes/kubeConfig.conf"
-         config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-         if err != nil {
-                  log.Fatal(err)
-         }
-         clientset, err := kubernetes.NewForConfig(config)
-         if err != nil {
-                  log.Fatal(err)
-         }
 
-         pods, err := clientset.CoreV1().Pods("").List(context.TODO(),metav1.ListOptions{})
-	 // nodes, err := clientset.CoreV1().Nodes().List(context.TODO(),metav1.ListOptions{})
+func main() {
+         // check whether the list is of Pods or Nodes
+         var arr []string
+         err := list.getItem("Pod",&arr)
          if err != nil {
-         	panic(err.Error())
-     	 }
-     	 fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
-     	 //fmt.Printf(pods.String())
-     	 for _, pod := range pods.Items {
-           	fmt.Printf("Pod name=/%s\n",pod.GetName())
-     	 }
+            log.Fatal(err)
+         }
+         listType := "Pods"
+         fmt.Printf("Resource type: %s", listType)
+         for _,element := range arr.items {
+            fmt.Printf("%s name = %s\n",listType,element)
+         }
 }
