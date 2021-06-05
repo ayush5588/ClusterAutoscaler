@@ -5,4 +5,4 @@ Implementation of Kubernetes Cluster Autoscaler in Golang
 
 ### STEPS
 1. To get the name and number of pods or nodes in the cluster, first build the project **go build**.
-2. Then give the object name i.e **./ClusterAutoscaler <object name>** where object name can be **pod** or **node**
+2. Then give the object name i.e **./ClusterAutoscaler object-name** where object-name can be *pod* or *node*
