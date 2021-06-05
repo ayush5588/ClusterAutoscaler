@@ -3,21 +3,25 @@ package main
 
 import(
     "fmt"
+    "os"
     "log"
-    list "github.com/ayush5588/ClusterAutoscaler/pkg"
+    list "github.com/ayush5588/ClusterAutoscaler/pkg/podNodeList"
     )
 
 
 func main() {
          // check whether the list is of Pods or Nodes
-         var arr []string
-         err := list.getItem("Pod",&arr)
+
+         // taking the command line argument for the object type i.e. pod or node
+         itemType := os.Args[1]
+         arr := []string{}
+         arr, err := list.GetItems(itemType)
          if err != nil {
             log.Fatal(err)
          }
-         listType := "Pods"
-         fmt.Printf("Resource type: %s", listType)
-         for _,element := range arr.items {
-            fmt.Printf("%s name = %s\n",listType,element)
+         fmt.Printf("size: %d\n",len(arr))
+         fmt.Printf("Resource type: %s\n", itemType)
+         for _,element := range arr {
+            fmt.Printf("%s name = %s\n",itemType,element)
          }
 }

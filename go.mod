@@ -36,4 +36,4 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.19.6
 )
 
-module kubernetes
+module github.com/ayush5588/ClusterAutoscaler

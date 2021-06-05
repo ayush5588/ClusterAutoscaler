@@ -8,30 +8,42 @@ import (
          //"log"
          //"fmt"
          metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    )
-
+)
 
 // get the list of either Pods or Nodes depending upon the itemType
-func getItems(string itemType, []string *arr) {
-    kubeconfig := "home/ayush5588/src/github.com/ClusterAutoscaler/kubeConfig.conf"
-    config, err := clinetcmd.BuildConfigFromFlags("",kubeconfig)
+// GetItems: INPUT -> type of object (i.e. pod or node)
+// GetItems: OUTPUT -> Slice containing the names in all namespace of the requested object and error (if exist)
+func GetItems(itemType string) ([]string, error) {
+    resourceList := []string{}
+    kubeconfig := "/home/ayush5588/go/src/github.com/ClusterAutoscaler/kubeConfig.conf"
+    config, err := clientcmd.BuildConfigFromFlags("",kubeconfig)
     if err!=nil{
-        panic(err.Error())
+        return resourceList, err
     }
     clientset, err := kubernetes.NewForConfig(config)
     if err != nil {
-        panic(err.Error())
+        return resourceList, err
     }
     if itemType == "pod" {
         arr, err := clientset.CoreV1().Pods("").List(context.TODO(),metav1.ListOptions{})
         if err != nil {
-            panic(err.Error())
+            return resourceList, err
+        }
+        // Insert the Pods name in the array resourceList
+        for _, item := range arr.Items {
+            resourceList = append(resourceList,item.GetName())
         }
     }else if itemType == "node" {
-        arr, err := clientset.CoreV1().Nodes("").List(context.TODO(),metav1.ListOptions{})
+        arr, err := clientset.CoreV1().Nodes().List(context.TODO(),metav1.ListOptions{})
         if err != nil {
-            panic(err.Error())
+            return resourceList, err
+        }
+        // Insert the Nodes name in the array resourceList
+        for _, item := range arr.Items {
+            resourceList = append(resourceList,item.GetName())
         }
     }
+
+    return resourceList, nil
 }
 
