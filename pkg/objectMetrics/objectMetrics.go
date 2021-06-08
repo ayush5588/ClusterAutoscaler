@@ -97,7 +97,7 @@ func getNodeMetrics(clientset *kubernetes.Clientset, nodes *NodeMetricsStruct, a
 }
 
 // kubeConfig file path
-var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
+var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/kubeConfig.conf"
 
 /* 
     1. Creates a config object from the kubeconfig file provided
