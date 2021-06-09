@@ -1,4 +1,4 @@
-/* objectMetrics pkg is to get the resource metrics usage of pods and nodes */
+/* metrics pkg is to get the resource metrics usage of pods and nodes */
 
 package metrics
 
