@@ -9,7 +9,7 @@ import (
    "net/http"
    "fmt"
 
-   metrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics"
+   metricsStruct "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsStruct"
 )
 
 
@@ -17,7 +17,7 @@ func main() {
    /* 10.103.151.144 is the ClusterIP address of the prometheus-server service */
    resp, err := http.Get("http://10.103.151.144:80/api/v1/query?query=kube_node_info")
    /* metrics.NodeInfoStruct is a structure for kube_node_info which is defined in the metricsStruct.go of metrics package */
-   var node metrics.NodeInfoStruct
+   var node metricsStruct.NodeInfoStruct
    if err != nil {
       log.Fatalln(err)
    }
