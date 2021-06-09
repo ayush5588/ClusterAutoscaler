@@ -1,4 +1,3 @@
-// Code to get the pods in the cluster
 package main
 
 import(
