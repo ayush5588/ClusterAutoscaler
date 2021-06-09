@@ -1,10 +1,12 @@
-package objectMetrics
+/* This is a test file */
+
+package main
 
 import (
     "context"
     "encoding/json"
     "fmt"
-    "strconv"
+    //"strconv"
     "time"
 
     "k8s.io/client-go/tools/clientcmd"
@@ -38,14 +40,44 @@ type PodMetricsList struct {
     } `json:"items"`
 }
 
+type NodeStatusStruct struct {
+	Status string `json:"status"`
+	Data   struct {
+		Resulttype string `json:"resultType"`
+		Result     []struct {
+			Metric struct {
+				Name                     string `json:"__name__"`
+				AppKubernetesIoInstance  string `json:"app_kubernetes_io_instance"`
+				AppKubernetesIoManagedBy string `json:"app_kubernetes_io_managed_by"`
+				AppKubernetesIoName      string `json:"app_kubernetes_io_name"`
+				ContainerRuntimeVersion  string `json:"container_runtime_version"`
+				HelmShChart              string `json:"helm_sh_chart"`
+				Instance                 string `json:"instance"`
+				InternalIP               string `json:"internal_ip"`
+				Job                      string `json:"job"`
+				KernelVersion            string `json:"kernel_version"`
+				KubeletVersion           string `json:"kubelet_version"`
+				KubeproxyVersion         string `json:"kubeproxy_version"`
+				KubernetesName           string `json:"kubernetes_name"`
+				KubernetesNamespace      string `json:"kubernetes_namespace"`
+				KubernetesNode           string `json:"kubernetes_node"`
+				Node                     string `json:"node"`
+				OsImage                  string `json:"os_image"`
+			} `json:"metric"`
+			Value []interface{} `json:"value"`
+		} `json:"result"`
+	} `json:"data"`
+}
+
 type PodUsage struct {
     Name string
     cpuUsage int
     memUsage int
 }
 
-func getMetrics(clientset *kubernetes.Clientset, pods *PodMetricsList) error {
-    data, err:= clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").Do(context.TODO()).Raw()
+func getMetrics(clientset *kubernetes.Clientset, pods *NodeStatusStruct) error {
+    // Using Prometheus-Server service ClusterIP address (kubectl get svc)
+    data, err:= clientset.RESTClient().Get().AbsPath("http://10.103.151.144:80/api/v1/query?query=kube_node_info").Do(context.TODO()).Raw()
     if err != nil {
         return err
     }
@@ -54,7 +86,8 @@ func getMetrics(clientset *kubernetes.Clientset, pods *PodMetricsList) error {
     return err
     }
 
-func GetObjectMetrics() ([]PodUsage, error) {
+// (PodUsage[], error)
+func main()  {
     kubeconfig := "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
     config, err := clientcmd.BuildConfigFromFlags("",kubeconfig)
     if err != nil {
@@ -65,12 +98,13 @@ func GetObjectMetrics() ([]PodUsage, error) {
     if err != nil {
         panic(err.Error())
     }
-    var pods PodMetricsList
+    var pods NodeStatusStruct
     err = getMetrics(clientset, &pods)
     if err != nil {
         panic(err.Error())
     }
-
+    fmt.Println(pods)
+    /*
     var PodMetricsArr []PodUsage
 
     for _, m := range pods.Items {
@@ -110,4 +144,5 @@ func GetObjectMetrics() ([]PodUsage, error) {
     }
     
     return PodMetricsArr,nil
+    */
 }

@@ -6,60 +6,11 @@ import (
     "context"
     "encoding/json"
     "strconv"
-    "time"
 
     "k8s.io/client-go/tools/clientcmd"
     "k8s.io/client-go/kubernetes"
+    metricsStruct "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsStruct"
 )
-
-
-type PodMetricsStruct struct {
-    Kind       string `json:"kind"`
-    APIVersion string `json:"apiVersion"`
-    Metadata   struct {
-        SelfLink string `json:"selfLink"`
-    } `json:"metadata"`
-    Items []struct {
-        Metadata struct {
-            Name              string    `json:"name"`
-            Namespace         string    `json:"namespace"`
-            SelfLink          string    `json:"selfLink"`
-            CreationTimestamp time.Time `json:"creationTimestamp"`
-        } `json:"metadata"`
-        Timestamp  time.Time `json:"timestamp"`
-        Window     string    `json:"window"`
-        Containers []struct {
-            Name  string `json:"name"`
-            Usage struct {
-                CPU    string `json:"cpu"`
-                Memory string `json:"memory"`
-            } `json:"usage"`
-        } `json:"containers"`
-    } `json:"items"`
-}
-
-
-type NodeMetricsStruct struct {
-	Kind       string `json:"kind"`
-	Apiversion string `json:"apiVersion"`
-	Metadata   struct {
-		Selflink string `json:"selfLink"`
-	} `json:"metadata"`
-	Items []struct {
-		Metadata struct {
-			Name              string    `json:"name"`
-			Selflink          string    `json:"selfLink"`
-			Creationtimestamp time.Time `json:"creationTimestamp"`
-		} `json:"metadata"`
-		Timestamp time.Time `json:"timestamp"`
-		Window    string    `json:"window"`
-		Usage     struct {
-			CPU    string `json:"cpu"`
-			Memory string `json:"memory"`
-		} `json:"usage"`
-	} `json:"items"`
-}
-
 
 type PodUsage struct {
     PodName string
@@ -76,7 +27,7 @@ type NodeUsage struct {
 
 
 /* Gets the Pod metrics from the specified API */
-func getPodMetrics(clientset *kubernetes.Clientset, pods *PodMetricsStruct, apiPath string) error {
+func getPodMetrics(clientset *kubernetes.Clientset, pods *metricsStruct.PodMetricsStruct, apiPath string) error {
     data, err:= clientset.RESTClient().Get().AbsPath(apiPath).Do(context.TODO()).Raw()
     if err != nil {
         return err
@@ -87,7 +38,7 @@ func getPodMetrics(clientset *kubernetes.Clientset, pods *PodMetricsStruct, apiP
 
 
 /* Gets the Node metrics from the specified API */
-func getNodeMetrics(clientset *kubernetes.Clientset, nodes *NodeMetricsStruct, apiPath string) error {
+func getNodeMetrics(clientset *kubernetes.Clientset, nodes *metricsStruct.NodeMetricsStruct, apiPath string) error {
     data, err := clientset.RESTClient().Get().AbsPath(apiPath).Do(context.TODO()).Raw()
     if err != nil {
         return err
@@ -114,7 +65,7 @@ func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
     if err != nil {
         return nil, err
     }
-    var nodes NodeMetricsStruct
+    var nodes metricsStruct.NodeMetricsStruct
     err = getNodeMetrics(clientset, &nodes, "apis/metrics.k8s.io/v1beta1/nodes")
 
     var NodeMetricsArr []NodeUsage
@@ -157,7 +108,7 @@ func GetPodMetrics(kubeConfig string) ([]PodUsage, error) {
     if err != nil {
         panic(err.Error())
     }
-    var pods PodMetricsStruct
+    var pods metricsStruct.PodMetricsStruct
     err = getPodMetrics(clientset, &pods, "apis/metrics.k8s.io/v1beta1/pods")
     if err != nil {
         return nil, err

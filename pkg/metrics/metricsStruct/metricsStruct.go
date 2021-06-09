@@ -1,5 +1,56 @@
 // Struct for kube_node_info query results which gives information about nodes
-package metrics
+package metricsStruct
+
+import (
+    "time"
+)
+
+type PodMetricsStruct struct {
+	Kind       string `json:"kind"`
+	Apiversion string `json:"apiVersion"`
+	Metadata   struct {
+		Selflink string `json:"selfLink"`
+	} `json:"metadata"`
+	Items []struct {
+		Metadata struct {
+			Name              string    `json:"name"`
+			Namespace         string    `json:"namespace"`
+			Selflink          string    `json:"selfLink"`
+			Creationtimestamp time.Time `json:"creationTimestamp"`
+		} `json:"metadata"`
+		Timestamp  time.Time `json:"timestamp"`
+		Window     string    `json:"window"`
+		Containers []struct {
+			Name  string `json:"name"`
+			Usage struct {
+				CPU    string `json:"cpu"`
+				Memory string `json:"memory"`
+			} `json:"usage"`
+		} `json:"containers"`
+	} `json:"items"`
+}
+
+
+type NodeMetricsStruct struct {
+	Kind       string `json:"kind"`
+	Apiversion string `json:"apiVersion"`
+	Metadata   struct {
+		Selflink string `json:"selfLink"`
+	} `json:"metadata"`
+	Items []struct {
+		Metadata struct {
+			Name              string    `json:"name"`
+			Selflink          string    `json:"selfLink"`
+			Creationtimestamp time.Time `json:"creationTimestamp"`
+		} `json:"metadata"`
+		Timestamp time.Time `json:"timestamp"`
+		Window    string    `json:"window"`
+		Usage     struct {
+			CPU    string `json:"cpu"`
+			Memory string `json:"memory"`
+		} `json:"usage"`
+	} `json:"items"`
+}
 
 type NodeInfoStruct struct {
 	Status string `json:"status"`
