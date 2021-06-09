@@ -3,35 +3,36 @@ package main
 
 import(
     "fmt"
-    //"os"
     "log"
-    //list "github.com/ayush5588/ClusterAutoscaler/pkg/podNodeList"
-    GetMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/objectMetrics"
+
+    GetMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics"
     )
 
+var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
 func main() {
 
-         // taking the command line argument for the object type i.e. pod or node
          /*
-         itemType := os.Args[1]
-         arr := []string{}
-         arr, err := list.GetItems(itemType)
-         if err != nil {
-            log.Fatal(err)
-            }
-         fmt.Printf("size: %d\n",len(arr))
-         fmt.Printf("Resource type: %s\n", itemType)
-         for _,element := range arr {
-            fmt.Printf("%s name = %s\n",itemType,element)
-         }*/
-         var arr []GetMetrics.NodeUsage
-         arr, err := GetMetrics.GetNodeMetrics()
+         // UNCOMMENT to get the Pod Metrics
+         var arr []GetMetrics.PodUsage
+         arr, err := GetMetrics.GetPodMetrics(kubeConfig)
          if err != nil {
             log.Fatal(err)
          }
          for _, p := range arr {
-            fmt.Printf("Name: %s\nCPU Usage: %dn\nMemory Usage: %dki\n\n",p.NodeName,p.NodeCpuUsage,p.NodeMemUsage)
+            fmt.Printf("Name: %s\nCPU Usage: %dn\nMemory Usage: %dki\n\n",p.PodName,p.PodCpuUsage,p.PodMemUsage)
+         }
+         */
+
+
+        /* Get Node Metrics */
+         var nodeArr []GetMetrics.NodeUsage
+         nodeArr, err := GetMetrics.GetNodeMetrics(kubeConfig)
+         if err != nil {
+            log.Fatal(err)
+         }
+         for _, n := range nodeArr {
+            fmt.Printf("Name: %s\nCPU Usage: %dn\nMemory Usage: %dki\n\n",n.NodeName,n.NodeCpuUsage,n.NodeMemUsage)
          }
 
 }

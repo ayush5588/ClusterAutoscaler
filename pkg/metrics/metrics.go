@@ -1,6 +1,6 @@
 /* objectMetrics pkg is to get the resource metrics usage of pods and nodes */
 
-package objectMetrics
+package metrics
 
 import (
     "context"
@@ -97,7 +97,7 @@ func getNodeMetrics(clientset *kubernetes.Clientset, nodes *NodeMetricsStruct, a
 }
 
 // kubeConfig file path
-var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/kubeConfig.conf"
+//var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
 /* 
     1. Creates a config object from the kubeconfig file provided
@@ -105,8 +105,8 @@ var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/kub
     3. Calls the appropriate function to get the metrics from the given API 
     4. Creates a slice of struct elements having resource usage and returns it back
 */
-func GetNodeMetrics() ([]NodeUsage, error) {
-    config, err := clientcmd.BuildConfigFromFlags("",kubeconfig)
+func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
+    config, err := clientcmd.BuildConfigFromFlags("",kubeConfig)
     if err != nil {
         return nil, err
     }
@@ -147,8 +147,8 @@ func GetNodeMetrics() ([]NodeUsage, error) {
 }
 
 
-func GetPodMetrics() ([]PodUsage, error) {
-    config, err := clientcmd.BuildConfigFromFlags("",kubeconfig)
+func GetPodMetrics(kubeConfig string) ([]PodUsage, error) {
+    config, err := clientcmd.BuildConfigFromFlags("",kubeConfig)
     if err != nil {
         panic(err.Error())
     }
