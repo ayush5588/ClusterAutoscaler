@@ -7,7 +7,7 @@ import (
    "encoding/json"
    "log"
    "net/http"
-//   "fmt"
+   "fmt"
 
    metricsStruct "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsStruct"
 )
@@ -24,6 +24,11 @@ type TempNodeStatusStruct struct {
     Condition string
     NodeStatus string
     NodeStatusValue string
+}
+
+type TempPodsNotScheduledStruct struct {
+    Namespace string
+    PodName string
 }
 
 
@@ -61,6 +66,7 @@ func PodStatusPhase (promServerIP string) ([]TempPodStatusStruct, error) {
 }
 
 
+
 func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
 
     query := "kube_node_status_condition"
@@ -94,6 +100,39 @@ func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
     return NodeStatusPhaseArr, nil
 }
 
+
+func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error) {
+  
+    query := "kube_pod_status_unschedulable"
+    resp, err := http.Get(promServerIP+query)
+    if err != nil {
+        return nil, err
+    }
+
+    body, err := ioutil.ReadAll(resp)
+    if err != nil {
+        return nil, err
+    }
+
+    var pod metricsStruct.PodStatusUnschedulableStruct
+    err := json.Unmarshal(body,&pod)
+    if err != nil {
+        return nil, err
+    }
+
+    var PodsNotScheduledArr []TempPodsNotScheduledStruct
+    if pod.Data.Result == nil {
+        return nil, nil
+    }
+   // Will add the part for the case where there are more than 1 unscheduled pods
+   var tempPod TempPodsNotScheduledStruct
+   tempPod.Namespace = pod[0]
+   tempPod.PodName = pod[1]
+   PodsNotScheduledArr = append(PodsNotScheduledArr, tempPod)
+   
+   return PodsNotScheduledArr, nil
+}
+
 /*
 func main() {
    //10.103.151.144 is the ClusterIP address of the prometheus-server service 
@@ -114,9 +153,11 @@ func main() {
    if err != nil {
         log.Fatalln(err)
    }
+//   fmt.Println(node.Data.Result.Value)
    for _, d := range node.Data.Result {
        fmt.Printf("Node: %s\nCondition: %s\nStatus: %s\nValue: %s",d.Metric.Node,d.Metric.Condition,d.Metric.Status,d.Value[1])
        fmt.Println("\n")
    }
 
-}*/
+}
+*/
