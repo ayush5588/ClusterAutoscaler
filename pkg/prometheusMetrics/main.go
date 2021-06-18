@@ -7,9 +7,9 @@ import (
    "encoding/json"
    "log"
    "net/http"
-   "fmt"
+//   "fmt"
 
-   metricsStruct "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsStruct"
+   metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
 )
 
 

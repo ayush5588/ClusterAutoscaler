@@ -9,7 +9,7 @@ import (
 
     "k8s.io/client-go/tools/clientcmd"
     "k8s.io/client-go/kubernetes"
-    metricsStruct "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsStruct"
+    metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
 )
 
 type PodUsage struct {
