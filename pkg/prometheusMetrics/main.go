@@ -16,36 +16,83 @@ import (
 type TempPodStatusStruct struct {
     PodName string
     PodPhase string
-    PhaseStatus string
+    PodPhaseValue string
+}
+
+type TempNodeStatusStruct struct {
+    NodeName string
+    Condition string
+    NodeStatus string
+    NodeStatusValue string
 }
 
 
+
 func PodStatusPhase (promServerIP string) ([]TempPodStatusStruct, error) {
+
     query := "kube_pod_status"
     resp, err := http.Get(promServerIP+query)
     if err != nil {
         return nil, err
     }
+
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         return nil, err
     }
+
     var pod metricsStruct.PodStatusPhaseStruct
     err = json.Unmarshal(body,&pod)
     if err != nil {
         return nil, err
     }
+
     var PodStatusPhaseArr []TempPodStatusStruct
+
     for _, p := range pod.Data.Result {
         var tempPod TempPodStatusStruct
         tempPod.PodName = p.Metric.Pod
         tempPod.PodPhase = p.Metric.Phase
-        tempPod.PhaseStatus = p.Value[1]
+        tempPod.PodPhaseValue = p.Value[1]
         PodStatusPhaseArr = append(PodStatusPhaseArr,tempPod)
     }
+
     return PodStatusPhaseArr, nil
 }
 
+
+func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
+
+    query := "kube_node_status_condition"
+    resp, err := http.get(promServerIP+query)
+    if err != nil {
+        return nil, err
+    }
+
+    body, err := ioutil.ReadAll(resp.body)
+    if err != nil {
+        return nil, err
+    }
+
+    var node metricsStruct.NodeStatusStruct
+    err = json.Unmarshal(body,&node)
+    if err != nil {
+        return nil, err
+    }
+    
+    var NodeStatusPhaseArr []TempNodeStatusStruct
+
+    for _, n := range node.Data.Result {
+        var tempNode TempNodeStatusStruct
+        tempNode.NodeName = n.Metric.Node
+        tempNode.Condition = n.Metric.Condition
+        tempNode.NodeStatus = n.Metric.Status
+        tempNode.NodeStatusValue = n.Value[1]
+        NodeStatusPhaseArr = append(NodeStatusPhaseArr, tempNode)
+    }
+
+    return NodeStatusPhaseArr, nil
+}
 
 /*
 func main() {
