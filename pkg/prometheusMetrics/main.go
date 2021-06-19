@@ -126,8 +126,8 @@ func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error
     }
    // Will add the part for the case where there are more than 1 unscheduled pods
    var tempPod TempPodsNotScheduledStruct
-   tempPod.Namespace = pod[0]
-   tempPod.PodName = pod[1]
+   tempPod.Namespace = pod.Data.Result[0]
+   tempPod.PodName = pod.Data.Result[1]
    PodsNotScheduledArr = append(PodsNotScheduledArr, tempPod)
 
    return PodsNotScheduledArr, nil
