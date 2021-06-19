@@ -85,7 +85,7 @@ func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
     if err != nil {
         return nil, err
     }
-    
+
     var NodeStatusPhaseArr []TempNodeStatusStruct
 
     for _, n := range node.Data.Result {
@@ -102,7 +102,7 @@ func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
 
 
 func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error) {
-  
+
     query := "kube_pod_status_unschedulable"
     resp, err := http.Get(promServerIP+query)
     if err != nil {
@@ -129,7 +129,7 @@ func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error
    tempPod.Namespace = pod[0]
    tempPod.PodName = pod[1]
    PodsNotScheduledArr = append(PodsNotScheduledArr, tempPod)
-   
+
    return PodsNotScheduledArr, nil
 }
 
