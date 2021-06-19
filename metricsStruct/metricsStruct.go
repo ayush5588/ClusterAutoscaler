@@ -5,6 +5,16 @@ import (
     "time"
 )
 
+
+type Metrics struct {
+    UnscheduledPods_CNT int
+    CpuUtilizationCNT int
+    MemUtilizationCNT int
+    PIDPressureStatus bool
+    DISKPressureStatus bool
+    MEMPressureStatus bool
+}
+
 type PodMetricsStruct struct {
 	Kind       string `json:"kind"`
 	Apiversion string `json:"apiVersion"`

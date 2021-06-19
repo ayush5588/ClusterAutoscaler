@@ -1,6 +1,6 @@
 /* This is under development prometheus metrics collection file */
 
-package main
+package promMetrics
 
 import (
    "io/ioutil"
