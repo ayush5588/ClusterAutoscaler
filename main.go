@@ -4,10 +4,13 @@ import(
     "fmt"
     "log"
 
-    GetMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics"
+    //GetMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics"
+    promMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/prometheusMetrics"
     )
 
 var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
+
+
 
 func main() {
 
@@ -23,8 +26,37 @@ func main() {
          }
          */
 
+        
+        // Get Pod Metrics
+        var podStatusPhaseArr []promMetrics.TempPodStatusStruct
+        podStatusPhaseArr, err1 := promMetrics.PodStatusPhase("http://10.101.202.25:80/api/v1/query?query=")
+        if err1 != nil {
+            log.Fatal(err1)
+        }
+        for _, p := range podStatusPhaseArr {
+            fmt.Printf("PodName: %s\nPodPhase: %s\nPhaseValue: %s\n\n", p.PodName, p.PodPhase, p.PhaseValue)
+        }
 
-        /* Get Node Metrics */
+        fmt.Println("\n\n--------------------------- NODE STATUS CONDITION INFO ----------------------------\n\n")
+        var nodeStatusPhaseArr []promMetrics.TempNodeStatusStruct
+        nodeStatusPhaseArr, err2 := promMetrics.NodeStatusPhase("http://10.101.202.25:80/api/v1/query?query=")
+        if err2 != nil {
+            log.Fatal(err2)
+        }
+        for _, n := range nodeStatusPhaseArr {
+            fmt.Printf("NodeName: %s\nCondition: %s\nConditionStatus: %s\nConditionStatusValue: %s\n\n", n.NodeName, n.Condition, n.ConditionStatus, n.ConditionStatusValue)
+        }
+
+        //var NodeUnderPressure []string
+        for _, n := range nodeStatusPhaseArr {
+            if n.Condition == "PIDPressure" || n.Condition == "DiskPressure" || n.Condition == "MemoryPressure" {
+                if n.ConditionStatus == "true" && n.ConditionStatusValue == "1" {
+                    fmt.Println("UPSCALE")
+                }
+            }
+        }
+        // Get Node Metrics
+        /*
          var nodeArr []GetMetrics.NodeUsage
          nodeArr, err := GetMetrics.GetNodeMetrics(kubeConfig)
          if err != nil {
@@ -32,6 +64,6 @@ func main() {
          }
          for _, n := range nodeArr {
             fmt.Printf("Name: %s\nCPU Usage: %dn\nMemory Usage: %dki\n\n",n.NodeName,n.NodeCpuUsage,n.NodeMemUsage)
-         }
+         }*/
 
 }
