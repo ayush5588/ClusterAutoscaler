@@ -1,6 +1,7 @@
 /* This is under development prometheus metrics collection file */
 
-package promMetrics
+//package promMetrics
+package metrics
 //package main
 
 import (

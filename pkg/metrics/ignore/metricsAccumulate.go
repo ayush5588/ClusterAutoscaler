@@ -1,11 +1,9 @@
-/* UnderDevelopment file*/
-
 package metrics
+
 
 import (
     "fmt"
     "log"
-    "strconv"
     
     metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
     getMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsServerMetrics"
@@ -16,7 +14,7 @@ var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
 var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
 // metricsStruct.Metrics, error
-func Start() {
+func main() {
     var FinalMetricsStruct metricsStruct.Metrics
     
     FinalMetricsStruct.UnscheduledPodsCNT = 0
@@ -46,9 +44,8 @@ func Start() {
                 FinalMetricsStruct.DISKPressureStatus = true
                 FinalMetricsStruct.StructSET = true
             }
-        }else {
-            //fmt.Println("NO Issues!!")
-        }
+    }else {
+        fmt.Println("NO Issues!!")
     }
 
     // Checking for the Unscheduled pods 
@@ -86,54 +83,47 @@ func Start() {
     if err != nil {
         log.Fatal(err)
     }
-    
-    fmt.Println(len(tempNodeResArr))
-    fmt.Println(len(nodeArr))
 
     for _, n1 := range tempNodeResArr {
         for _, n2 := range nodeArr {
             if n1.NodeName == n2.NodeName {
                 if n1.Resource == "memory" {
-                    fmt.Printf("Node Name: %s", n1.NodeName)
-                    str1 := n1.ResourceAvailable
+                    str1 := n1.ResourceAvailable[:len(n1.ResourceAvailable)-4]
                     memAllocatable, err := strconv.ParseFloat(str1,64)
                     if err != nil {
                         //fmt.Println(err)
                         log.Fatal(err)
                     }
-
-                    memUsage := float64(n2.NodeMemUsage * 1024)  // Converting to bytes (from Kibibyte)
-                    //fmt.Println(memUsage)
-                    memoryUtilization := ( memUsage / memAllocatable) * 100
-                    if memoryUtilization >= 75.00 {
+                    memAllocatable = memAllocatable * 1000000000
+                    memUsage := n2.NodeMemUsage * 1024  // Converting to bytes (from Kibibyte)
+                    memoryUtilization := ( memUsage / int(memAllocatable)) * 100
+                    if memoryUtilization >= 75 {
                         // UPSCALE
-                    }else if memoryUtilization <= 20.00 {
+                    }else if memoryUtilization <= 20 {
                         // DOWNSCALE
-
-                        fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n", memoryUtilization)
+                        fmt.Println("Memory Utilization is BELOW threshold")
                     }else {
-                        fmt.Printf("Memory Utilization is NETURAL: %0.2f\n", memoryUtilization)
+                        fmt.Println("Memory Utilization is NETURAL")
                     }
 
-                }else if n1.Resource == "cpu" {
-                    fmt.Printf("Node Name: %s", n1.NodeName)
-                    cpuAllocatableCores, err := strconv.ParseFloat(n1.ResourceAvailable, 64)
+                } else if n1.Resource == "cpu" {
+                    cpuAllocatableCores, err := strconv.Atoi(n1.ResourceAvailable)
                     if err != nil {
                         //fmt.Println(err)
                         log.Fatal(err)
                     }
                     // convert CpuUsage UNIT from nanocores to cores by dividing it by 1 billion
-                    cpuUsageCores := float64(n2.NodeCpuUsage) / 1000000000
+                    cpuUsageCores := int(n2.NodeCpuUsage / 1000000000)
 
                     cpuUtilization := (cpuUsageCores / cpuAllocatableCores) * 100
 
-                    if cpuUtilization >= 75.00 {
+                    if cpuUtilization >= 75 {
                         // UPSCALE
-                    }else if cpuUtilization <= 20.00 {
+                    }else if cpuUtilization <= 20 {
                         // DOWNSCALE
-                        fmt.Printf("CPU Utilization is BELOW threshold: %0.2f\n", cpuUtilization)
+                        fmt.Println("CPU Utilization is BELOW threshold")
                     }else {
-                        fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n", cpuUtilization)
+                        fmt.Println("CPU Utilization is NEUTRAL")
                     }
 
                 }

@@ -7,7 +7,7 @@ import (
 
 
 type Metrics struct {
-    UnscheduledPods_CNT int
+    UnscheduledPodsCNT int
     CpuUtilizationCNT int
     MemUtilizationCNT int
     PIDPressureStatus bool
