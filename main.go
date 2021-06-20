@@ -15,7 +15,28 @@ var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
 
 
 func main() {
+    
+        // Get Pod Status
+        var podStatusPhaseArr []promMetrics.TempPodStatusStruct
+        podStatusPhaseArr, err1 := promMetrics.PodStatusPhase(promServerIP)
+        if err1 != nil {
+            log.Fatal(err1)
+        }
+        for _, p := range podStatusPhaseArr {
+            fmt.Printf("PodName: %s\nPodPhase: %s\nPhaseValue: %s\n\n", p.PodName, p.PodPhase, p.PhaseValue)
+        }
 
+        fmt.Println("\n\n--------------------------- NODE STATUS CONDITION INFO ----------------------------\n\n")
+        // Get Node Status
+        var nodeStatusPhaseArr []promMetrics.TempNodeStatusStruct
+        nodeStatusPhaseArr, err2 := promMetrics.NodeStatusPhase(promServerIP)
+        if err2 != nil {
+            log.Fatal(err2)
+        }
+        for _, n := range nodeStatusPhaseArr {
+            fmt.Printf("NodeName: %s\nCondition: %s\nConditionStatus: %s\nConditionStatusValue: %s\n\n", n.NodeName, n.Condition, n.ConditionStatus, n.ConditionStatusValue)
+        }
+    
          /*
          // UNCOMMENT to get the Pod Metrics
          var arr []GetMetrics.PodUsage
@@ -29,29 +50,8 @@ func main() {
          */
 
         
-        // Get Pod Metrics
-        var podStatusPhaseArr []promMetrics.TempPodStatusStruct
-        podStatusPhaseArr, err1 := promMetrics.PodStatusPhase(promServerIP)
-        if err1 != nil {
-            log.Fatal(err1)
-        }
-        for _, p := range podStatusPhaseArr {
-            fmt.Printf("PodName: %s\nPodPhase: %s\nPhaseValue: %s\n\n", p.PodName, p.PodPhase, p.PhaseValue)
-        }
-
-        fmt.Println("\n\n--------------------------- NODE STATUS CONDITION INFO ----------------------------\n\n")
-        var nodeStatusPhaseArr []promMetrics.TempNodeStatusStruct
-        nodeStatusPhaseArr, err2 := promMetrics.NodeStatusPhase(promServerIP)
-        if err2 != nil {
-            log.Fatal(err2)
-        }
-        for _, n := range nodeStatusPhaseArr {
-            fmt.Printf("NodeName: %s\nCondition: %s\nConditionStatus: %s\nConditionStatusValue: %s\n\n", n.NodeName, n.Condition, n.ConditionStatus, n.ConditionStatusValue)
-        }
-
-
-        // Get Node Metrics
         /*
+         // Get Node Metrics
          var nodeArr []GetMetrics.NodeUsage
          nodeArr, err := GetMetrics.GetNodeMetrics(kubeConfig)
          if err != nil {
@@ -59,6 +59,8 @@ func main() {
          }
          for _, n := range nodeArr {
             fmt.Printf("Name: %s\nCPU Usage: %dn\nMemory Usage: %dki\n\n",n.NodeName,n.NodeCpuUsage,n.NodeMemUsage)
-         }*/
+         }
+         */
+    
 
 }
