@@ -37,6 +37,11 @@ func main() {
             fmt.Printf("NodeName: %s\nCondition: %s\nConditionStatus: %s\nConditionStatusValue: %s\n\n", n.NodeName, n.Condition, n.ConditionStatus, n.ConditionStatusValue)
         }
     
+    
+    
+    
+    
+    
          /*
          // UNCOMMENT to get the Pod Metrics
          var arr []GetMetrics.PodUsage
