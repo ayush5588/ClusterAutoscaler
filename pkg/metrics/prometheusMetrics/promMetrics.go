@@ -32,6 +32,15 @@ type TempPodsNotScheduledStruct struct {
     PodName string
 }
 
+type TempNodeResourceStruct struct {
+    NodeName string
+    Resource string
+    ResourceUnit string
+    ResourceAvailable string
+}
+
+
+
 func checkType (value []interface{}) (string) {
     flag := false
     var ans string
@@ -203,6 +212,37 @@ func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error
    return PodsNotScheduledArr, nil
 }
 
+
+func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, error) {
+
+    var tempNodeResArr []TempNodeResourceStruct
+    query := "kube_node_status_allocatable"
+    resp, err := http.Get(promServerIP+query)
+    if err != nil {
+        return tempNodeResArr, err
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return tempNodeResArr, err
+    }
+    var node metricsStruct.NodeResAllocatableStruct
+    err = json.Unmarshal(body, &node)
+    if err != nil {
+        return tempNodeResArr, err
+    }
+
+    for _, n := range node.Data.Result {
+        var tempNode TempNodeResourceStruct
+        tempNode.NodeName = n.Metric.Node
+        tempNode.Resource = n.Metric.Resource
+        tempNode.ResourceUnit = n.Metric.Unit
+        str := checkType(n.Value)
+        tempNode.ResourceAvailable = str
+        tempNodeResArr = append(tempNodeResArr, tempNode)
+    }
+
+    return tempNodeResArr, nil
+}
 
 /*
 func main() {

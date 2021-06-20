@@ -15,7 +15,7 @@ import (
 
 func main() {
 	client, err := api.NewClient(api.Config{
-        Address: "http://10.103.151.144:80/api/v1/query?query=kube_node_info'",
+        Address: "http://10.101.202.25:80/",
 	})
 	if err != nil {
 		fmt.Printf("Error creating client: %v\n", err)
@@ -25,7 +25,7 @@ func main() {
 	v1api := v1.NewAPI(client)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, warnings, err := v1api.Query(ctx, "up", time.Now())
+	result, warnings, err := v1api.Query(ctx, "http_request_duration_seconds_bucket", time.Now())
 	if err != nil {
 		fmt.Printf("Error querying Prometheus: %v\n", err)
 		os.Exit(1)
