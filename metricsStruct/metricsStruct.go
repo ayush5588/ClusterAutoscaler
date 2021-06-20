@@ -13,6 +13,7 @@ type Metrics struct {
     PIDPressureStatus bool
     DISKPressureStatus bool
     MEMPressureStatus bool
+    StructSET bool
 }
 
 type PodMetricsStruct struct {

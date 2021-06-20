@@ -10,6 +10,8 @@ import(
 
 var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
+// Just for the dev env. WIll be replaced with env variables at the end
+var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
 
 
 func main() {
@@ -29,7 +31,7 @@ func main() {
         
         // Get Pod Metrics
         var podStatusPhaseArr []promMetrics.TempPodStatusStruct
-        podStatusPhaseArr, err1 := promMetrics.PodStatusPhase("http://10.101.202.25:80/api/v1/query?query=")
+        podStatusPhaseArr, err1 := promMetrics.PodStatusPhase(promServerIP)
         if err1 != nil {
             log.Fatal(err1)
         }
@@ -39,7 +41,7 @@ func main() {
 
         fmt.Println("\n\n--------------------------- NODE STATUS CONDITION INFO ----------------------------\n\n")
         var nodeStatusPhaseArr []promMetrics.TempNodeStatusStruct
-        nodeStatusPhaseArr, err2 := promMetrics.NodeStatusPhase("http://10.101.202.25:80/api/v1/query?query=")
+        nodeStatusPhaseArr, err2 := promMetrics.NodeStatusPhase(promServerIP)
         if err2 != nil {
             log.Fatal(err2)
         }
@@ -47,14 +49,7 @@ func main() {
             fmt.Printf("NodeName: %s\nCondition: %s\nConditionStatus: %s\nConditionStatusValue: %s\n\n", n.NodeName, n.Condition, n.ConditionStatus, n.ConditionStatusValue)
         }
 
-        //var NodeUnderPressure []string
-        for _, n := range nodeStatusPhaseArr {
-            if n.Condition == "PIDPressure" || n.Condition == "DiskPressure" || n.Condition == "MemoryPressure" {
-                if n.ConditionStatus == "true" && n.ConditionStatusValue == "1" {
-                    fmt.Println("UPSCALE")
-                }
-            }
-        }
+
         // Get Node Metrics
         /*
          var nodeArr []GetMetrics.NodeUsage
