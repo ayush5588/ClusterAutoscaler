@@ -72,7 +72,25 @@ func Start() {
     }
     
     //fmt.Println(len(tempNodeResArr))
-    //fmt.Println(len(nodeArr))
+
+
+    /*
+    nodeMap := make(map[string][]string)
+    nodeMap, err = promMetrics.PodInNodes(promServerIP)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for nodeName, podsArr := range nodeMap {
+        fmt.Println(nodeName)
+        for _, p := range podsArr {
+            fmt.Printf("%s\n", p)
+        }
+        fmt.Println("\n\n")
+    }
+
+    fmt.Println("\n\n\n")
+    */
 
     for _, n1 := range tempNodeResArr {
         for _, n2 := range nodeArr {
