@@ -78,7 +78,7 @@ func Start() {
         for _, n2 := range nodeArr {
             if n1.NodeName == n2.NodeName {
                 if n1.Resource == "memory" {
-                    fmt.Printf("Node Name: %s", n1.NodeName)
+                    fmt.Printf("Node Name: %s\n", n1.NodeName)
                     str1 := n1.ResourceAvailable
                     memAllocatable, err := strconv.ParseFloat(str1,64)
                     if err != nil {

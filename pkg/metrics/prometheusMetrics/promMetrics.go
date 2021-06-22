@@ -245,6 +245,37 @@ func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, e
     return tempNodeResArr, nil
 }
 
+
+
+func PodInNodes(promServerIP string) (map[string][]string, error) {
+
+    nodesMap := make(map[string][]string)
+    query := "kube_pod_info"
+    resp, err := http.Get(promServerIP+query)
+    if err != nil {
+        // log.Fatal(err)
+        return nodesMap, err
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+
+    var nodePod metricsStruct.PodInfoStruct
+
+    err = json.Unmarshal(body, &nodePod)
+
+    if err != nil {
+        return nodesMap, err
+    }
+
+    for _, n := range nodePod.Data.Result {
+        nodesMap[n.Metric.Node] = append(nodesMap[n.Metric.Node], n.Metric.Pod)
+    }
+
+    return nodesMap, nil
+
+}
+
+
+
 /*
 func main() {
    //10.103.151.144 is the ClusterIP address of the prometheus-server service 
