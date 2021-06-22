@@ -17,15 +17,6 @@ var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/rea
 
 // metricsStruct.Metrics, error
 func Start() {
-    var FinalMetricsStruct metricsStruct.Metrics
-    
-    FinalMetricsStruct.UnscheduledPodsCNT = 0
-    FinalMetricsStruct.CpuUtilizationCNT = 0
-    FinalMetricsStruct.MemUtilizationCNT = 0
-    FinalMetricsStruct.PIDPressureStatus = false
-    FinalMetricsStruct.DISKPressureStatus = false
-    FinalMetricsStruct.MEMPressureStatus = false
-    FinalMetricsStruct.StructSET = false
 
     // Checking for the Node status 
     var tempNodeStatusArr []promMetrics.TempNodeStatusStruct
@@ -37,14 +28,11 @@ func Start() {
     for _, n := range tempNodeStatusArr {
         if n.ConditionStatus == "true" && n.ConditionStatusValue == "1" {
             if n.Condition == "PIDPressure" {
-                FinalMetricsStruct.PIDPressureStatus = true
-                FinalMetricsStruct.StructSET = true
+                // UPSCALE
             }else if n.Condition == "MemoryPressure" {
-                FinalMetricsStruct.MEMPressureStatus = true
-                FinalMetricsStruct.StructSET = true
+                // UPSCALE
             }else if n.Condition == "DiskPressure" {
-                FinalMetricsStruct.DISKPressureStatus = true
-                FinalMetricsStruct.StructSET = true
+                // UPSCALE
             }
         }else {
             //fmt.Println("NO Issues!!")
@@ -60,8 +48,7 @@ func Start() {
         //return FinalMetricsStruct, err
     }
     if len(tempPodsNotScheduledArr) > 0 {
-        FinalMetricsStruct.UnscheduledPodsCNT = 1;
-        FinalMetricsStruct.StructSET = true
+        // UPSCALE
     }else {
         fmt.Println("NO unscheduled Pods !!")
     }
