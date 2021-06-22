@@ -7,7 +7,7 @@ import (
     "log"
     "strconv"
     
-    metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
+//    metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
     getMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsServerMetrics"
     promMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/prometheusMetrics"
 )
@@ -15,7 +15,8 @@ import (
 var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
 var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
-// metricsStruct.Metrics, error
+
+
 func Start() {
 
     // Checking for the Node status 
@@ -23,7 +24,6 @@ func Start() {
     tempNodeStatusArr, err := promMetrics.NodeStatusPhase(promServerIP)
     if err != nil {
         log.Fatal(err)
-        //return FinalMetricsStruct, err
     }
     for _, n := range tempNodeStatusArr {
         if n.ConditionStatus == "true" && n.ConditionStatusValue == "1" {
@@ -44,8 +44,6 @@ func Start() {
     tempPodsNotScheduledArr, err = promMetrics.PodsNotScheduled(promServerIP)
     if err != nil {
         log.Fatal(err)
-        //FinalMetricsStruct.StructSET = false
-        //return FinalMetricsStruct, err
     }
     if len(tempPodsNotScheduledArr) > 0 {
         // UPSCALE
@@ -65,7 +63,6 @@ func Start() {
     tempNodeResArr, err = promMetrics.NodeAllocatableResources(promServerIP)
     if err != nil {
         log.Fatal(err)
-        //return FinalMetricsStruct, err
     }
 
     var nodeArr []getMetrics.NodeUsage
@@ -74,8 +71,8 @@ func Start() {
         log.Fatal(err)
     }
     
-    fmt.Println(len(tempNodeResArr))
-    fmt.Println(len(nodeArr))
+    //fmt.Println(len(tempNodeResArr))
+    //fmt.Println(len(nodeArr))
 
     for _, n1 := range tempNodeResArr {
         for _, n2 := range nodeArr {
@@ -85,28 +82,25 @@ func Start() {
                     str1 := n1.ResourceAvailable
                     memAllocatable, err := strconv.ParseFloat(str1,64)
                     if err != nil {
-                        //fmt.Println(err)
                         log.Fatal(err)
                     }
 
                     memUsage := float64(n2.NodeMemUsage * 1024)  // Converting to bytes (from Kibibyte)
-                    //fmt.Println(memUsage)
+
                     memoryUtilization := ( memUsage / memAllocatable) * 100
                     if memoryUtilization >= 75.00 {
                         // UPSCALE
                     }else if memoryUtilization <= 20.00 {
-                        // DOWNSCALE
-
-                        fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n", memoryUtilization)
+                        // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
+                        fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n\n", memoryUtilization)
                     }else {
-                        fmt.Printf("Memory Utilization is NETURAL: %0.2f\n", memoryUtilization)
+                        fmt.Printf("Memory Utilization is NETURAL: %0.2f\n\n", memoryUtilization)
                     }
 
                 }else if n1.Resource == "cpu" {
-                    fmt.Printf("Node Name: %s", n1.NodeName)
+                    fmt.Printf("Node Name: %s\n", n1.NodeName)
                     cpuAllocatableCores, err := strconv.ParseFloat(n1.ResourceAvailable, 64)
                     if err != nil {
-                        //fmt.Println(err)
                         log.Fatal(err)
                     }
                     // convert CpuUsage UNIT from nanocores to cores by dividing it by 1 billion
@@ -117,7 +111,7 @@ func Start() {
                     if cpuUtilization >= 75.00 {
                         // UPSCALE
                     }else if cpuUtilization <= 20.00 {
-                        // DOWNSCALE
+                        // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
                         fmt.Printf("CPU Utilization is BELOW threshold: %0.2f\n", cpuUtilization)
                     }else {
                         fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n", cpuUtilization)

@@ -1,4 +1,3 @@
-// Struct for kube_node_info query results which gives information about nodes
 package metricsStruct
 
 import (
@@ -16,6 +15,9 @@ type Metrics struct {
     StructSET bool
 }
 
+
+
+// Struct for apis/metrics.k8s.io/v1beta1/pods query results which tells pod resource metrics usage from Metrics-Server
 type PodMetricsStruct struct {
 	Kind       string `json:"kind"`
 	Apiversion string `json:"apiVersion"`
@@ -42,6 +44,8 @@ type PodMetricsStruct struct {
 }
 
 
+
+// Struct for apis/metrics.k8s.io/v1beta1/nodes query results which tells nodes resource metrucs usage from Metrics-Server
 type NodeMetricsStruct struct {
 	Kind       string `json:"kind"`
 	Apiversion string `json:"apiVersion"`
@@ -63,6 +67,43 @@ type NodeMetricsStruct struct {
 	} `json:"items"`
 }
 
+
+
+// Struct for kube_pod_info query results which tells about the pods present in the cluster
+type PodInfoStruct struct {
+        Status string `json:"status"`
+        Data   struct {
+                Resulttype string `json:"resultType"`
+                Result     []struct {
+                        Metric struct {
+                                Name                     string `json:"__name__"`
+                                AppKubernetesIoInstance  string `json:"app_kubernetes_io_instance"`
+                                AppKubernetesIoManagedBy string `json:"app_kubernetes_io_managed_by"`
+                                AppKubernetesIoName      string `json:"app_kubernetes_io_name"`
+                                CreatedByKind            string `json:"created_by_kind"`
+                                CreatedByName            string `json:"created_by_name"`
+                                HelmShChart              string `json:"helm_sh_chart"`
+                                HostIP                   string `json:"host_ip"`
+                                Instance                 string `json:"instance"`
+                                Job                      string `json:"job"`
+                                KubernetesName           string `json:"kubernetes_name"`
+                                KubernetesNamespace      string `json:"kubernetes_namespace"`
+                                KubernetesNode           string `json:"kubernetes_node"`
+                                Namespace                string `json:"namespace"`
+                                Node                     string `json:"node"`
+                                Pod                      string `json:"pod"`
+                                PodIP                    string `json:"pod_ip"`
+                                PriorityClass            string `json:"priority_class"`
+                                UID                      string `json:"uid"`
+                        } `json:"metric"`
+                        Value []interface{} `json:"value"`
+                } `json:"result"`
+        } `json:"data"`
+}
+
+
+
+// Struct for kube_node_info query results which tells about the nodes present in the cluster
 type NodeInfoStruct struct {
 	Status string `json:"status"`
 	Data   struct {
@@ -92,6 +133,8 @@ type NodeInfoStruct struct {
 	} `json:"data"`
 }
 
+
+
 // Struct for kube_node_spec_unschedulable query results which tells whether a node can schedule new pods
 type NodeSpecUnschedStruct struct {
 	Status string `json:"status"`
@@ -115,6 +158,8 @@ type NodeSpecUnschedStruct struct {
 		} `json:"result"`
 	} `json:"data"`
 }
+
+
 
 // Struct for kube_node_status_condition query results which tells the status of the nodes
 type NodeStatusStruct struct {
@@ -143,7 +188,8 @@ type NodeStatusStruct struct {
 }
 
 
-/* Struct for kube_node_status_capacity query results which tells capacity of different resources of a node */
+
+// Struct for kube_node_status_capacity query results which tells capacity of different resources of a node
 type NodeResCapacityStruct struct {
 	Status string `json:"status"`
 	Data   struct {
@@ -170,7 +216,8 @@ type NodeResCapacityStruct struct {
 }
 
 
-/* Struct for kube_node_status_allocatable query results which tells how much of a resource(which is schedulable) on a node is allocatable */
+
+// Struct for kube_node_status_allocatable query results which tells how much of a resource(which is schedulable) on a node is allocatable
 type NodeResAllocatableStruct struct {
 	Status string `json:"status"`
 	Data   struct {
@@ -196,7 +243,9 @@ type NodeResAllocatableStruct struct {
 	} `json:"data"`
 }
 
-/*Struct for kube_pod_status_unschedulable query results which describes the unschedulable status for the pod*/
+
+
+// Struct for kube_pod_status_unschedulable query results which describes the unschedulable status for the pod
 type PodStatusUnschedulableStruct struct {
 	Status string `json:"status"`
 	Data   struct {
@@ -205,7 +254,9 @@ type PodStatusUnschedulableStruct struct {
 	} `json:"data"`
 }
 
-/* Struct for kube_pod_status_phase query results which tells the pod current phase */
+
+
+// Struct for kube_pod_status_phase query results which tells the pod current phase
 type PodStatusPhaseStruct struct {
 	Status string `json:"status"`
 	Data   struct {
