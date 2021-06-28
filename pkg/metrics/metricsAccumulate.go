@@ -18,7 +18,7 @@ var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/rea
 
 
 func Start() {
-
+    
     // Checking for the Node status 
     var tempNodeStatusArr []promMetrics.TempNodeStatusStruct
     tempNodeStatusArr, err := promMetrics.NodeStatusPhase(promServerIP)
@@ -33,11 +33,14 @@ func Start() {
                 // UPSCALE
             }else if n.Condition == "DiskPressure" {
                 // UPSCALE
+            }else{
+                fmt.Printf("No PIDPressure OR MemoryPressure OR DiskPressure in node -> %s\n", n.NodeName)
             }
-        }else {
-            //fmt.Println("NO Issues!!")
         }
+            //fmt.Println("NO Issues with PIDPressure OR MemoryPressure OR DiskPressure!!\n\n")
     }
+
+    fmt.Println("\n\n")
 
     // Checking for the Unscheduled pods 
     var tempPodsNotScheduledArr []promMetrics.TempPodsNotScheduledStruct
@@ -45,11 +48,19 @@ func Start() {
     if err != nil {
         log.Fatal(err)
     }
-    if len(tempPodsNotScheduledArr) > 0 {
-        // UPSCALE
-    }else {
-        fmt.Println("NO unscheduled Pods !!")
+    //fmt.Println(tempPodsNotScheduledArr)
+    var cntUnscheduledPods int = 0
+    for _, p := range tempPodsNotScheduledArr {
+        if p.Namespace != "" {
+            cntUnscheduledPods += 1
+            break
+        }
     }
+   if cntUnscheduledPods >= 1 {
+        // UPSCALE
+   }else {
+        fmt.Println("No unscheduled pods\n\n")
+   }
 
 
     //  Calculate the current utilization for the CPU and MEM
@@ -64,7 +75,23 @@ func Start() {
     if err != nil {
         log.Fatal(err)
     }
-
+    
+    
+    mp := make(map[string]float64)
+    for _, node := range tempNodeResArr {
+        nodeName := node.NodeName
+        nodeRes := node.Resource
+        _, exist := mp[nodeName+"-"+nodeRes]
+        if !exist {
+            str1 := node.ResourceAvailable
+            allocatableResource, err := strconv.ParseFloat(str1,64)
+            if err != nil {
+                log.Fatal(err)
+            }
+            mp[nodeName+"-"+nodeRes] = allocatableResource
+        }
+    }
+    
     var nodeArr []getMetrics.NodeUsage
     nodeArr, err = getMetrics.GetNodeMetrics(kubeConfig)
     if err != nil {
@@ -91,12 +118,54 @@ func Start() {
 
     fmt.Println("\n\n\n")
     */
+    
 
+    
+    for _, n := range nodeArr{
+        fmt.Printf("NODE -> %s\n", n.NodeName)
+        // Memory utilization
+        memAllocatable, exist := mp[n.NodeName+"-"+"memory"]
+        if exist {
+            memUsage := float64(n.NodeMemUsage * 1024)  // Converting to bytes (from Kibibyte)
+
+            memoryUtilization := ( memUsage / memAllocatable) * 100
+
+            if memoryUtilization >= 75.00 {
+                // UPSCALE
+            }else if memoryUtilization <= 20.00 {
+                // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
+                fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n", memoryUtilization)
+            }else {
+                fmt.Printf("Memory Utilization is NETURAL: %0.2f\n", memoryUtilization)
+            }
+        }
+        
+        // CPU Utilization
+        cpuAllocatableCores, exist := mp[n.NodeName+"-"+"cpu"]
+        if exist {
+            // convert CpuUsage UNIT from nanocores to cores by dividing it by 1 billion
+            cpuUsageCores := float64(n.NodeCpuUsage) / 1000000000
+
+            cpuUtilization := (cpuUsageCores / cpuAllocatableCores) * 100
+
+            if cpuUtilization >= 75.00 {
+                // UPSCALE
+            }else if cpuUtilization <= 20.00 {
+                // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
+                fmt.Printf("CPU Utilization is BELOW threshold: %0.2f\n\n", cpuUtilization)
+            }else {
+                fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n\n", cpuUtilization)
+            }
+        }
+    }
+    
+
+    /*
     for _, n1 := range tempNodeResArr {
         for _, n2 := range nodeArr {
             if n1.NodeName == n2.NodeName {
                 if n1.Resource == "memory" {
-                    fmt.Printf("Node Name: %s\n", n1.NodeName)
+                    //fmt.Printf("Node Name: %s\n", n1.NodeName)
                     str1 := n1.ResourceAvailable
                     memAllocatable, err := strconv.ParseFloat(str1,64)
                     if err != nil {
@@ -110,13 +179,13 @@ func Start() {
                         // UPSCALE
                     }else if memoryUtilization <= 20.00 {
                         // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
-                        fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n\n", memoryUtilization)
+                        //fmt.Printf("Memory Utilization is BELOW threshold: %0.2f\n\n", memoryUtilization)
                     }else {
-                        fmt.Printf("Memory Utilization is NETURAL: %0.2f\n\n", memoryUtilization)
+                        //fmt.Printf("Memory Utilization is NETURAL: %0.2f\n\n", memoryUtilization)
                     }
 
                 }else if n1.Resource == "cpu" {
-                    fmt.Printf("Node Name: %s\n", n1.NodeName)
+                    //fmt.Printf("Node Name: %s\n", n1.NodeName)
                     cpuAllocatableCores, err := strconv.ParseFloat(n1.ResourceAvailable, 64)
                     if err != nil {
                         log.Fatal(err)
@@ -130,16 +199,16 @@ func Start() {
                         // UPSCALE
                     }else if cpuUtilization <= 20.00 {
                         // Pre-Checks such as PodDisruptionBudget (PDB) to be done before deciding to DOWNSCALE
-                        fmt.Printf("CPU Utilization is BELOW threshold: %0.2f\n", cpuUtilization)
+                        //fmt.Printf("CPU Utilization is BELOW threshold: %0.2f\n", cpuUtilization)
                     }else {
-                        fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n", cpuUtilization)
+                        //fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n", cpuUtilization)
                     }
 
                 }
             }
         }
     }
-
+    */
 
 }
 
