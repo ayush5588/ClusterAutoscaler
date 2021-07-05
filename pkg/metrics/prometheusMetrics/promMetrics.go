@@ -1,17 +1,14 @@
-/* This is under development prometheus metrics collection file */
-
-//package promMetrics
 package metrics
-//package main
 
 import (
    "io/ioutil"
    "encoding/json"
    //"log"
    "net/http"
-   "fmt"
+   //"fmt"
 
    metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
+
 )
 
 
@@ -98,29 +95,33 @@ func checkType2(value []interface{}) (string, string) {
 }
 
 
+
+
 func PodStatusPhase (promServerIP string) ([]TempPodStatusStruct, error) {
 
     var PodStatusPhaseArr []TempPodStatusStruct
 
     query := "kube_pod_status_phase"
-    fmt.Println(promServerIP+query)
+    //fmt.Println(promServerIP+query)
     resp, err := http.Get(promServerIP+query)
     if err != nil {
         return PodStatusPhaseArr, err
+        //log.Fatal(err)
     }
 
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         return PodStatusPhaseArr, err
+        //log.Fatal(err)
     }
 
     var pod metricsStruct.PodStatusPhaseStruct
     err = json.Unmarshal(body,&pod)
     if err != nil {
         return PodStatusPhaseArr, err
+        //log.Fatal(err)
     }
 
-    //var PodStatusPhaseArr []TempPodStatusStruct
 
     for _, p := range pod.Data.Result {
         var tempPod TempPodStatusStruct
@@ -138,7 +139,7 @@ func PodStatusPhase (promServerIP string) ([]TempPodStatusStruct, error) {
 
 
 
-
+// []TempNodeStatusStruct, error
 func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
     
     var NodeStatusPhaseArr []TempNodeStatusStruct
@@ -147,20 +148,24 @@ func NodeStatusPhase (promServerIP string) ([]TempNodeStatusStruct, error) {
     resp, err := http.Get(promServerIP+query)
     if err != nil {
         return NodeStatusPhaseArr, err
+        //log.Fatal(err)
     }
 
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         return NodeStatusPhaseArr, err
+        //log.Fatal(err)
     }
 
+    
     var node metricsStruct.NodeStatusStruct
     err = json.Unmarshal(body,&node)
     if err != nil {
         return NodeStatusPhaseArr, err
+        //log.Fatal(err)
+        
     }
 
-    //var NodeStatusPhaseArr []TempNodeStatusStruct
 
     for _, n := range node.Data.Result {
         var tempNode TempNodeStatusStruct
@@ -186,50 +191,70 @@ func PodsNotScheduled (promServerIP string) ([]TempPodsNotScheduledStruct, error
     resp, err := http.Get(promServerIP+query)
     if err != nil {
         return PodsNotScheduledArr, err
+        //log.Fatal(err)
     }
 
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         return PodsNotScheduledArr, err
+        //log.Fatal(err)
     }
 
     var pod metricsStruct.PodStatusUnschedulableStruct
     err = json.Unmarshal(body,&pod)
     if err != nil {
         return PodsNotScheduledArr, err
+        //log.Fatal(err)
     }
 
-    //var PodsNotScheduledArr []TempPodsNotScheduledStruct
+
     if pod.Data.Result == nil {
         return PodsNotScheduledArr, nil
+        //log.Fatal(err)
     }
-   // Will add the part for the case where there are more than 1 unscheduled pods
+
+    for _, p:= range pod.Data.Result {
+       var tempPod TempPodsNotScheduledStruct
+       tempPod.Namespace = p.Metric.Namespace
+       tempPod.PodName = p.Metric.Pod
+       PodsNotScheduledArr = append(PodsNotScheduledArr, tempPod)
+   }
+    
+   /*
    var tempPod TempPodsNotScheduledStruct
    str1, str2 := checkType2(pod.Data.Result)
    tempPod.Namespace = str1
    tempPod.PodName = str2
    PodsNotScheduledArr = append(PodsNotScheduledArr, tempPod)
+   */
 
    return PodsNotScheduledArr, nil
 }
 
 
-func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, error) {
+
+func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, error){
 
     var tempNodeResArr []TempNodeResourceStruct
+
     query := "kube_node_status_allocatable"
     resp, err := http.Get(promServerIP+query)
     if err != nil {
         return tempNodeResArr, err
+        //log.Fatal(err)
     }
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         return tempNodeResArr, err
+        //log.Fatal(err)
     }
+
+
     var node metricsStruct.NodeResAllocatableStruct
     err = json.Unmarshal(body, &node)
     if err != nil {
         return tempNodeResArr, err
+        //log.Fatal(err)
     }
 
     for _, n := range node.Data.Result {
@@ -246,14 +271,14 @@ func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, e
 }
 
 
-
+/*
 func PodInNodes(promServerIP string) (map[string][]string, error) {
 
     nodesMap := make(map[string][]string)
     query := "kube_pod_info"
     resp, err := http.Get(promServerIP+query)
     if err != nil {
-        // log.Fatal(err)
+        //log.Fatal(err)
         return nodesMap, err
     }
     body, err := ioutil.ReadAll(resp.Body)
@@ -264,6 +289,7 @@ func PodInNodes(promServerIP string) (map[string][]string, error) {
 
     if err != nil {
         return nodesMap, err
+
     }
 
     for _, n := range nodePod.Data.Result {
@@ -274,34 +300,18 @@ func PodInNodes(promServerIP string) (map[string][]string, error) {
 
 }
 
+*/
+
 
 
 /*
-func main() {
-   //10.103.151.144 is the ClusterIP address of the prometheus-server service 
-   resp, err := http.Get("http://10.101.202.25:80/api/v1/query?query=kube_node_status_condition")
-   // metrics.NodeInfoStruct is a structure for kube_node_info which is defined in the metricsStruct.go of metrics package
-   //var node metricsStruct.NodeInfoStruct
-   var node metricsStruct.NodeStatusStruct
-   if err != nil {
-      log.Fatalln(err)
-   }
-//We Read the response body on the line below.
-   body, err := ioutil.ReadAll(resp.Body)
-   if err != nil {
-      log.Fatalln(err)
-   }
-   err = json.Unmarshal(body,&node)
-   //fmt.Println(pod)
-   if err != nil {
-        log.Fatalln(err)
-   }
-//   fmt.Println(node.Data.Result.Value)
-   for _, d := range node.Data.Result {
-       fmt.Printf("%T: ", d.Value[0])
-//       fmt.Printf("Node: %s\nCondition: %s\nStatus: %s\nValue: %s\nType: %T",d.Metric.Node,d.Metric.Condition,d.Metric.Status,d.Value[1],d.Value[1])
-       fmt.Println("\n")
-   }
+func AllFunc(promServerIP string) (*bigcache.BigCache) {
 
+    //PodStatusPhase (promServerIP)
+    NodeStatusPhase (promServerIP)
+    PodsNotScheduled (promServerIP)
+    NodeAllocatableResources (promServerIP)
+
+    return Cache
 }
 */

@@ -246,11 +246,38 @@ type NodeResAllocatableStruct struct {
 
 
 // Struct for kube_pod_status_unschedulable query results which describes the unschedulable status for the pod
+
+/*
 type PodStatusUnschedulableStruct struct {
 	Status string `json:"status"`
 	Data   struct {
 		Resulttype string        `json:"resultType"`
 		Result     []interface{} `json:"result"`
+	} `json:"data"`
+}
+*/
+
+type PodStatusUnschedulableStruct struct {
+	Status string `json:"status"`
+	Data   struct {
+		Resulttype string `json:"resultType"`
+		Result     []struct {
+			Metric struct {
+				Name                     string `json:"__name__"`
+				AppKubernetesIoInstance  string `json:"app_kubernetes_io_instance"`
+				AppKubernetesIoManagedBy string `json:"app_kubernetes_io_managed_by"`
+				AppKubernetesIoName      string `json:"app_kubernetes_io_name"`
+				HelmShChart              string `json:"helm_sh_chart"`
+				Instance                 string `json:"instance"`
+				Job                      string `json:"job"`
+				KubernetesName           string `json:"kubernetes_name"`
+				KubernetesNamespace      string `json:"kubernetes_namespace"`
+				KubernetesNode           string `json:"kubernetes_node"`
+				Namespace                string `json:"namespace"`
+				Pod                      string `json:"pod"`
+			} `json:"metric"`
+			Value []interface{} `json:"value"`
+		} `json:"result"`
 	} `json:"data"`
 }
 

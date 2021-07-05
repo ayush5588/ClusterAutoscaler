@@ -6,10 +6,12 @@ import (
     "context"
     "encoding/json"
     "strconv"
+    //"log"
 
     "k8s.io/client-go/tools/clientcmd"
     "k8s.io/client-go/kubernetes"
     metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
+
 )
 
 type PodUsage struct {
@@ -37,7 +39,9 @@ func getPodMetrics(clientset *kubernetes.Clientset, pods *metricsStruct.PodMetri
     }
 
 
-/* Gets the Node metrics from the specified API */
+
+
+// Gets the Node metrics from the specified API
 func getNodeMetrics(clientset *kubernetes.Clientset, nodes *metricsStruct.NodeMetricsStruct, apiPath string) error {
     data, err := clientset.RESTClient().Get().AbsPath(apiPath).Do(context.TODO()).Raw()
     if err != nil {
@@ -46,6 +50,8 @@ func getNodeMetrics(clientset *kubernetes.Clientset, nodes *metricsStruct.NodeMe
     err = json.Unmarshal(data, &nodes)
     return err
 }
+
+
 
 // kubeConfig file path
 //var kubeconfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
@@ -57,18 +63,22 @@ func getNodeMetrics(clientset *kubernetes.Clientset, nodes *metricsStruct.NodeMe
     4. Creates a slice of struct elements having resource usage and returns it back
 */
 func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
+
+    var NodeMetricsArr []NodeUsage
+
     config, err := clientcmd.BuildConfigFromFlags("",kubeConfig)
     if err != nil {
-        return nil, err
+        return NodeMetricsArr, err
+        //log.Fatal(err)
     }
     clientset, err := kubernetes.NewForConfig(config)
     if err != nil {
-        return nil, err
+        return NodeMetricsArr, err
+        //log.Fatal(err)
     }
     var nodes metricsStruct.NodeMetricsStruct
     err = getNodeMetrics(clientset, &nodes, "apis/metrics.k8s.io/v1beta1/nodes")
 
-    var NodeMetricsArr []NodeUsage
     for _, m := range nodes.Items {
         var NodeMetrics NodeUsage
         
@@ -78,7 +88,7 @@ func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
         if len(fmtNodeCPU) > 0 {
             ci, err := strconv.Atoi(fmtNodeCPU)
             if err != nil {
-                return nil, err
+                return NodeMetricsArr, err
             }
             NodeMetrics.NodeCpuUsage = ci
         }
@@ -87,7 +97,7 @@ func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
         if len(fmtNodeMem) > 0 {
             cm, err := strconv.Atoi(fmtNodeMem)
             if err != nil {
-                return nil, err
+                return NodeMetricsArr, err
             }
             NodeMetrics.NodeMemUsage = cm
         }
@@ -95,26 +105,32 @@ func GetNodeMetrics(kubeConfig string) ([]NodeUsage, error) {
         NodeMetricsArr = append(NodeMetricsArr,NodeMetrics)
     }
     return NodeMetricsArr, nil
+    
 }
 
 
 func GetPodMetrics(kubeConfig string) ([]PodUsage, error) {
+
+    var PodMetricsArr []PodUsage
+
     config, err := clientcmd.BuildConfigFromFlags("",kubeConfig)
     if err != nil {
-        panic(err.Error())
+        //panic(err.Error())
+        return PodMetricsArr, nil
     }
 
     clientset, err := kubernetes.NewForConfig(config)
     if err != nil {
-        panic(err.Error())
+        //panic(err.Error())
+        return PodMetricsArr, nil
     }
     var pods metricsStruct.PodMetricsStruct
     err = getPodMetrics(clientset, &pods, "apis/metrics.k8s.io/v1beta1/pods")
     if err != nil {
-        return nil, err
+        return PodMetricsArr, err
     }
 
-    var PodMetricsArr []PodUsage
+    //var PodMetricsArr []PodUsage
 
     for _, m := range pods.Items {
     var PodMetrics PodUsage
@@ -131,7 +147,7 @@ func GetPodMetrics(kubeConfig string) ([]PodUsage, error) {
         if len(fmtPodCPU) > 0 {
             ci, err := strconv.Atoi(fmtPodCPU)
             if err != nil {
-                return nil, err
+                return PodMetricsArr, err
             }
             cUsage = cUsage + ci
         }
@@ -140,7 +156,7 @@ func GetPodMetrics(kubeConfig string) ([]PodUsage, error) {
         if len(fmtPodMem) > 0 {
             mi, err := strconv.Atoi(fmtPodMem)
             if err != nil {
-                return nil, err
+                return PodMetricsArr, err
             }
             mUsage = mUsage + mi
             }
