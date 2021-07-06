@@ -5,6 +5,7 @@ import (
    "encoding/json"
    //"log"
    "net/http"
+   "strconv"
    //"fmt"
 
    metricsStruct "github.com/ayush5588/ClusterAutoscaler/metricsStruct"
@@ -270,6 +271,49 @@ func NodeAllocatableResources (promServerIP string) ([]TempNodeResourceStruct, e
     return tempNodeResArr, nil
 }
 
+
+func NodeResourceRequest (promServerIP string) (map[string]float64, error) {
+    requestMap := make(map[string]float64)
+
+    query := "kube_pod_container_resource_requests"
+    resp, err := http.Get(promServerIP+query)
+    if err != nil {
+        return requestMap, err
+        //log.Fatal(err)
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return requestMap, err
+        //log.Fatal(err)
+    }
+
+
+    var node metricsStruct.NodeResRequestStruct
+    err = json.Unmarshal(body, &node)
+    if err != nil {
+        return requestMap, err
+        //log.Fatal(err)
+    }
+
+    for _, n := range node.Data.Result {
+        nodeName := n.Metric.Node
+        nodeRes := n.Metric.Resource
+        str1 := checkType(n.Value)
+        requestResource, err := strconv.ParseFloat(str1,64)
+        if err != nil {
+            return requestMap, err
+        }
+        _, exist := requestMap[nodeName+"-"+nodeRes]
+        if !exist {
+            requestMap[nodeName+"-"+nodeRes] = requestResource
+        }else {
+            requestMap[nodeName+"-"+nodeRes] = requestMap[nodeName+"-"+nodeRes] + requestResource
+        }
+    }
+
+    return requestMap, nil
+
+}
 
 /*
 func PodInNodes(promServerIP string) (map[string][]string, error) {
