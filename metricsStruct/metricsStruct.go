@@ -309,3 +309,34 @@ type PodStatusPhaseStruct struct {
 	} `json:"data"`
 }
 
+
+
+// Struct for kube_pod_container_resource_requests query results which tells about requested resource amount for each node
+type NodeResRequestStruct struct {
+	Status string `json:"status"`
+	Data   struct {
+		Resulttype string `json:"resultType"`
+		Result     []struct {
+			Metric struct {
+				Name                     string `json:"__name__"`
+				AppKubernetesIoInstance  string `json:"app_kubernetes_io_instance"`
+				AppKubernetesIoManagedBy string `json:"app_kubernetes_io_managed_by"`
+				AppKubernetesIoName      string `json:"app_kubernetes_io_name"`
+				Container                string `json:"container"`
+				HelmShChart              string `json:"helm_sh_chart"`
+				Instance                 string `json:"instance"`
+				Job                      string `json:"job"`
+				KubernetesName           string `json:"kubernetes_name"`
+				KubernetesNamespace      string `json:"kubernetes_namespace"`
+				KubernetesNode           string `json:"kubernetes_node"`
+				Namespace                string `json:"namespace"`
+				Node                     string `json:"node"`
+				Pod                      string `json:"pod"`
+				Resource                 string `json:"resource"`
+				Unit                     string `json:"unit"`
+			} `json:"metric"`
+			Value []interface{} `json:"value"`
+		} `json:"result"`
+	} `json:"data"`
+}
+
