@@ -9,12 +9,42 @@ import (
 
     getMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/metricsServerMetrics"
     promMetrics "github.com/ayush5588/ClusterAutoscaler/pkg/metrics/prometheusMetrics"
-
+    getNodeList "github.com/ayush5588/ClusterAutoscaler/pkg/podNodeList"
 )
 
 var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
 var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
 
+
+func shiftToAnotherNode (nodeName string, allocatableMap map[string]float64) (string, error) {
+    var finalNode string = ""
+
+    NodeList, err := getNodeList.GetItems("node")
+    if err != nil {
+        return "",err
+    }
+    requestMap, err := promMetrics.NodeResourceRequest(promServerIP)
+    if err != nil {
+        return "", err
+    }
+    
+    requiredMEM := requestMap[nodeName+"-"+"memory"]
+    requiredCPU := requestMap[nodeName+"-"+"cpu"]
+
+    for _, node := range NodeList {
+        if node != nodeName && node != "master"{
+            memLeft := allocatableMap[node+"-"+"memory"] - requestMap[node+"-"+"memory"]
+            cpuLeft := allocatableMap[node+"-"+"cpu"] - requestMap[node+"-"+"cpu"]
+
+            if requiredMEM <= memLeft && requiredCPU <= cpuLeft {
+                finalNode = node
+                break
+            }
+        }
+    }
+
+    return finalNode, nil
+}
 
 func Start() {
     
@@ -43,6 +73,8 @@ func Start() {
             //fmt.Println("NO Issues with PIDPressure OR MemoryPressure OR DiskPressure!!\n\n")
     }
 
+    fmt.Println("\n\n")
+
     var tempPodsNotScheduledArr []promMetrics.TempPodsNotScheduledStruct
     tempPodsNotScheduledArr, err = promMetrics.PodsNotScheduled(promServerIP)
     if err != nil {
@@ -53,18 +85,19 @@ func Start() {
     for _, p := range tempPodsNotScheduledArr {
         if p.PodName != "" {
             cntUnscheduledPods += 1
-            break
+            fmt.Printf("\nUnscheduled Pod Name: %s", p.PodName)
+            //break
         }
     }
 
     if cntUnscheduledPods >= 1 {
         // UPSCALE
-        fmt.Println("\n\nUnscheduled Pods in the Cluster -> UPSCALE\n\n")
+        fmt.Printf("\n\n%d Unscheduled Pods in the Cluster -> UPSCALE\n\n", cntUnscheduledPods)
     }else {
-        fmt.Println("\n\nNo unscheduled pods\n\n")
+        fmt.Println("No unscheduled pods\n\n")
     }
     
-
+    fmt.Println("\n")
 
     //  Calculate the current utilization for the CPU and MEM
 
@@ -108,15 +141,19 @@ func Start() {
 
     // Check the utilization of the resources to decide whether to UPSCALE or DOWNSCALE
     for _, n := range nodeArr{
-        fmt.Printf("NODE -> %s\n", n.NodeName)
+        fmt.Printf("\nNODE -> %s\n", n.NodeName)
 
         var upscale bool = false
         var downscale bool = false
+        
+        //var memNodeUsage float64
+        //var cpuNodeUsage float64
 
         // Memory Utilization
         memAllocatable, exist :=  mp[n.NodeName+"-"+"memory"]
         if exist {
             memUsage := float64(n.NodeMemUsage * 1024)  // Converting to bytes (from Kibibyte)
+            //memNodeUsage = memUsage
 
             memoryUtilization := ( memUsage / memAllocatable) * 100
             fmt.Printf("Memory Utilization = %0.2f\n", memoryUtilization)
@@ -135,6 +172,7 @@ func Start() {
         if exist {
             // convert CpuUsage UNIT from nanocores to cores by dividing it by 1 billion
             cpuUsageCores := float64(n.NodeCpuUsage) / 1000000000
+            //cpuNodeUsage = cpuUsageCores
 
             cpuUtilization := (cpuUsageCores / cpuAllocatableCores) * 100
             fmt.Printf("CPU Utilization = %0.2f\n", cpuUtilization)
@@ -149,12 +187,29 @@ func Start() {
         }
 
         if upscale {
-            fmt.Println("UPSCALE\n\n")
+            //fmt.Println("\nUPSCALE\n\n")
         }else {
             if downscale {
-                fmt.Println("DOWNSCALE\n\n")
+                if n.NodeName != "master" {
+                    destinationNode, err := shiftToAnotherNode(n.NodeName, mp)
+
+                    if err != nil {
+                        log.Fatal(err)
+                    }
+
+                    if destinationNode != "" {
+                        fmt.Println("\nDOWNSCALE")
+                        fmt.Printf("Can move pods to node: %s\n\n\n", destinationNode)
+                    } else {
+                        fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
+                    }
+                    //fmt.Println("DOWNSCALE\n\n")
+
+                } else {
+                    fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
+                }
             }else {
-                fmt.Println("NEUTRAL\n\n")
+                fmt.Println("\nNEUTRAL\n\n")
             }
         }
     }
