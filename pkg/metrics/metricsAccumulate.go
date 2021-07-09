@@ -136,12 +136,21 @@ func Start() {
     if err != nil {
         log.Fatal(err)
     }
+    
+    nodeAction := make(map[string]string)
+    nodeRemarks := make(map[string]string)
 
-
+    fmt.Println("\nNODE\t\tMEMORY%\t\tCPU%\n")
 
     // Check the utilization of the resources to decide whether to UPSCALE or DOWNSCALE
     for _, n := range nodeArr{
-        fmt.Printf("\nNODE -> %s\n", n.NodeName)
+        //fmt.Printf("\nNODE -> %s\t", n.NodeName)
+        if n.NodeName == "master" {
+            fmt.Printf("%s\t\t", n.NodeName)
+        } else {
+            fmt.Printf("%s\t", n.NodeName)
+        }
+        //fmt.Printf("%s\t", n.NodeName)
 
         var upscale bool = false
         var downscale bool = false
@@ -156,7 +165,8 @@ func Start() {
             //memNodeUsage = memUsage
 
             memoryUtilization := ( memUsage / memAllocatable) * 100
-            fmt.Printf("Memory Utilization = %0.2f\n", memoryUtilization)
+            //fmt.Printf("Memory Utilization = %0.2f\t", memoryUtilization)
+            fmt.Printf("%0.2f\t", memoryUtilization)
             if memoryUtilization >= 50.00 {
                 upscale = true
             }else if memoryUtilization <= 20.00 {
@@ -175,7 +185,8 @@ func Start() {
             //cpuNodeUsage = cpuUsageCores
 
             cpuUtilization := (cpuUsageCores / cpuAllocatableCores) * 100
-            fmt.Printf("CPU Utilization = %0.2f\n", cpuUtilization)
+            //fmt.Printf("CPU utilization : %0.2f\t\n", cpuUtilization)
+            fmt.Printf("\t%0.2f\n", cpuUtilization)
             if cpuUtilization >= 50.00 {
                 upscale = true
             }else if cpuUtilization <= 20.00 {
@@ -185,6 +196,10 @@ func Start() {
                 //fmt.Printf("CPU Utilization is NEUTRAL: %0.2f\n\n", cpuUtilization)
             }
         }
+        //fmt.Println("\n\n")
+
+        //nodeAction := make(map[string]string)
+        //nodeRemarks := make(map[string]string)
 
         if upscale {
             //fmt.Println("\nUPSCALE\n\n")
@@ -198,21 +213,38 @@ func Start() {
                     }
 
                     if destinationNode != "" {
-                        fmt.Println("\nDOWNSCALE")
-                        fmt.Printf("Can move pods to node: %s\n\n\n", destinationNode)
+                        nodeAction[n.NodeName] = "Downscale"
+                        nodeRemarks[n.NodeName] = "Can move pods to " + destinationNode
+                        //fmt.Println("\nDOWNSCALE")
+                        //fmt.Printf("Can move pods to node: %s\n\n\n", destinationNode)
                     } else {
-                        fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
+                        nodeAction[n.NodeName] = "Cannot Downscale"
+                        nodeRemarks[n.NodeName] = "Cannot downscale as no Nodes fulfill the resource requirement"
+                        //fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
                     }
                     //fmt.Println("DOWNSCALE\n\n")
 
                 } else {
-                    fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
+                    //fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods of MASTER node cannot be moved to other nodes\n\n")
                 }
             }else {
-                fmt.Println("\nNEUTRAL\n\n")
+                nodeAction[n.NodeName] = "Neutral"
+                nodeRemarks[n.NodeName] = "No action needed"
+                //fmt.Println("\nNEUTRAL\n\n")
             }
         }
     }
+
+    fmt.Println("\n\n")
+
+    fmt.Println("\nNODE\t\t STATUS\t\t\tREMARKS\n")
+    for val, _ := range nodeAction {
+        fmt.Printf("%s\t", val)
+        fmt.Printf("%s\t", nodeAction[val])
+        fmt.Printf("%s\n", nodeRemarks[val])
+    }
+
+    fmt.Println("\n\n")
 
 }
 
