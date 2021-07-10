@@ -13,9 +13,9 @@ import (
 // get the list of either Pods or Nodes depending upon the itemType
 // GetItems: INPUT -> type of object (i.e. pod or node)
 // GetItems: OUTPUT -> Slice containing the names in all namespace of the requested object and error (if exist)
-func GetItems(itemType string) ([]string, error) {
+func GetItems(itemType string, kubeconfig string) ([]string, error) {
     resourceList := []string{}
-    kubeconfig := "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
+    //kubeconfig := "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
     config, err := clientcmd.BuildConfigFromFlags("",kubeconfig)
     if err!=nil{
         return resourceList, err

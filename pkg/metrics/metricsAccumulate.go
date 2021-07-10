@@ -19,7 +19,7 @@ var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/rea
 func shiftToAnotherNode (nodeName string, allocatableMap map[string]float64) (string, error) {
     var finalNode string = ""
 
-    NodeList, err := getNodeList.GetItems("node")
+    NodeList, err := getNodeList.GetItems("node", kubeConfig)
     if err != nil {
         return "",err
     }
