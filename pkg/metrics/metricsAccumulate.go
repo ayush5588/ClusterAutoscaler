@@ -178,6 +178,9 @@ func Start() {
     nodeAction := make(map[string]string)
     nodeRemarks := make(map[string]string)
 
+    var cannotDownscaleIdt bool = false
+    var downscaleIdt bool = false
+
     fmt.Println("\nNODE\t\tMEMORY%\t\tCPU%\n")
 
     // Check the utilization of the resources to decide whether to UPSCALE or DOWNSCALE
@@ -248,11 +251,13 @@ func Start() {
                     }
 
                     if destinationNode != "" {
+                        downscaleIdt = true
                         nodeAction[n.NodeName] = "DOWNSCALE"
                         nodeRemarks[n.NodeName] = "Can move pods to " + destinationNode
                         //fmt.Println("\nDOWNSCALE")
                         //fmt.Printf("Can move pods to node: %s\n\n\n", destinationNode)
                     } else {
+                        cannotDownscaleIdt = true
                         nodeAction[n.NodeName] = "CANNOT DOWNSCALE"
                         nodeRemarks[n.NodeName] = "Cannot downscale as no Nodes fulfill the resource requirement"
                         //fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
@@ -263,9 +268,11 @@ func Start() {
                     //fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods of MASTER node cannot be moved to other nodes\n\n")
                 }
             }else {
-                nodeAction[n.NodeName] = "NEUTRAL"
-                nodeRemarks[n.NodeName] = "\tNo action needed"
-                //fmt.Println("\nNEUTRAL\n\n")
+                if n.NodeName != "master" {
+                    nodeAction[n.NodeName] = "NEUTRAL"
+                    nodeRemarks[n.NodeName] = "No action needed"
+                    //fmt.Println("\nNEUTRAL\n\n")
+                }
             }
         }
     }
@@ -275,7 +282,15 @@ func Start() {
     fmt.Println("\nNODE\t\t STATUS\t\t\tREMARKS\n")
     for val, _ := range nodeAction {
         fmt.Printf("%s\t", val)
-        fmt.Printf("%s\t", nodeAction[val])
+        if nodeAction[val] == "NEUTRAL" {
+            if cannotDownscaleIdt || downscaleIdt {
+                fmt.Printf("%s\t\t\t", nodeAction[val])
+            }
+        } else if !cannotDownscaleIdt {
+            fmt.Printf("%s\t\t", nodeAction[val])
+        } else {
+            fmt.Printf("%s\t", nodeAction[val])
+        }
         fmt.Printf("%s\n", nodeRemarks[val])
     }
 
