@@ -12,10 +12,13 @@ import (
     getNodeList "github.com/ayush5588/ClusterAutoscaler/pkg/podNodeList"
 )
 
-var promServerIP string = "http://10.101.202.25:80/api/v1/query?query="
-var kubeConfig string = "/home/ayush5588/go/src/github.com/ClusterAutoscaler/realKubeConfig.conf"
+
+var promServerIP string
+var kubeConfig string
 
 
+
+/* Checking whether the pods of the (maybe) downscaled nodes can be shifted to other node */
 func shiftToAnotherNode (nodeName string, allocatableMap map[string]float64) (string, error) {
     var finalNode string = ""
 
@@ -46,8 +49,14 @@ func shiftToAnotherNode (nodeName string, allocatableMap map[string]float64) (st
     return finalNode, nil
 }
 
-func Start() {
-    
+
+
+func Start(promIP string, kubeConfigPath string) {
+
+    promServerIP = "http://" + promIP + "/api/v1/query?query="
+    kubeConfig = kubeConfigPath
+
+
     // Check the Node status for PIDPressure, MemoryPressure, DiskPressure
     var tempNodeStatusArr []promMetrics.TempNodeStatusStruct
     tempNodeStatusArr, err := promMetrics.NodeStatusPhase(promServerIP)
@@ -260,7 +269,6 @@ func Start() {
                         cannotDownscaleIdt = true
                         nodeAction[n.NodeName] = "CANNOT DOWNSCALE"
                         nodeRemarks[n.NodeName] = "Cannot downscale as no Nodes fulfill the resource requirement"
-                        //fmt.Println("\nUnder utilized node but cannot DOWNSCALE as pods cannot be moved to other nodes\n\n")
                     }
                     //fmt.Println("DOWNSCALE\n\n")
 
@@ -271,7 +279,7 @@ func Start() {
                 if n.NodeName != "master" {
                     nodeAction[n.NodeName] = "NEUTRAL"
                     nodeRemarks[n.NodeName] = "No action needed"
-                    //fmt.Println("\nNEUTRAL\n\n")
+
                 }
             }
         }
