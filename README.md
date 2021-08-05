@@ -21,15 +21,10 @@ When the cluster autoscaler sees that certain nodes are underutilized (i.e resou
 ### 1. ```k8s Cluster Architecture```
 ![image](https://user-images.githubusercontent.com/48388639/124967507-22214080-e042-11eb-99f5-3efbb879e621.png)
 <br />
-### 2. ```Metrics Collection```
-![image](https://user-images.githubusercontent.com/48388639/114090511-29b33b00-98d5-11eb-8e0e-ead61a5a28bd.png)
-<br />
-### 3. ```Metrics Exposing```
-![image](https://user-images.githubusercontent.com/48388639/114090716-6a12b900-98d5-11eb-9d4e-e35c8c6bbec7.png)
-### 4. ```Upscaling Decision Making Process``` 
+### 2. ```Upscaling Decision Making Process``` 
 ![image](https://user-images.githubusercontent.com/48388639/124967694-5694fc80-e042-11eb-84bd-efc051f537ad.png)
 <br />
-### 5. ```Downscaling Decision Making Process```
+### 3. ```Downscaling Decision Making Process```
 ![image](https://user-images.githubusercontent.com/48388639/124967994-b8edfd00-e042-11eb-8ce0-b4da09146669.png)
 
 
